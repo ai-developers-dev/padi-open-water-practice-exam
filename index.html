@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#062a3d" />
+<title>PADI Open Water Practice Exam</title>
+<style>
+  :root {
+    --bg-1: #0a4d68;
+    --bg-2: #062a3d;
+    --card: #ffffff;
+    --ink: #0f2330;
+    --muted: #5b7184;
+    --line: #e3eaef;
+    --accent: #0096c7;
+    --accent-dark: #0077a8;
+    --accent-soft: #e2f3fa;
+    --green: #1a9e54;
+    --green-soft: #e4f6ec;
+    --red: #d23b3b;
+    --red-soft: #fbe8e8;
+    --amber: #e08a00;
+    --shadow: 0 12px 40px rgba(4, 30, 45, 0.28);
+    --radius: 16px;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: linear-gradient(160deg, var(--bg-1) 0%, var(--bg-2) 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
+    /* fluid padding + iOS safe areas (notch / home indicator) */
+    padding:
+      clamp(14px, 3.5vw, 28px)
+      max(env(safe-area-inset-right), clamp(10px, 4vw, 16px))
+      calc(40px + env(safe-area-inset-bottom))
+      max(env(safe-area-inset-left), clamp(10px, 4vw, 16px));
+  }
+
+  .shell { width: 100%; max-width: 760px; margin: 0 auto; }
+
+  .brand { text-align: center; color: #fff; margin-bottom: clamp(14px, 3vw, 20px); }
+  .brand .wave { font-size: clamp(26px, 7vw, 32px); line-height: 1; }
+  .brand h1 { font-size: clamp(18px, 5vw, 23px); margin: 6px 0 2px; letter-spacing: 0.2px; }
+  .brand p { margin: 0; color: #bfe3f1; font-size: clamp(12px, 3.2vw, 13px); }
+
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: clamp(18px, 4.5vw, 28px);
+  }
+
+  /* ---------- Start screen ---------- */
+  .start h2 { margin: 0 0 10px; font-size: clamp(18px, 4.6vw, 21px); }
+  .start p { color: var(--muted); line-height: 1.55; margin: 0 0 16px; font-size: clamp(14px, 3.6vw, 15.5px); }
+  .start p .hl { color: var(--accent-dark); font-weight: 600; }
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(7px, 2vw, 10px);
+    margin: 18px 0 22px;
+  }
+  .fact { background: var(--accent-soft); border-radius: 12px; padding: clamp(11px, 3vw, 14px) 8px; text-align: center; }
+  .fact b { display: block; font-size: clamp(18px, 5.5vw, 22px); color: var(--accent-dark); }
+  .fact span { font-size: clamp(11px, 3vw, 12px); color: var(--muted); }
+  .resume-note {
+    background: #fff7e6; border: 1px solid #ffe2a8; color: #8a5a00;
+    border-radius: 10px; padding: 10px 12px; font-size: 13px; margin-bottom: 18px; display: none;
+  }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    border: none; border-radius: 11px;
+    padding: 13px 18px; min-height: 48px;
+    font-size: clamp(14.5px, 3.8vw, 15px); font-weight: 600;
+    cursor: pointer; font-family: inherit;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    transition: transform .05s ease, background .15s ease, box-shadow .15s ease;
+    touch-action: manipulation;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-dark); }
+  .btn-ghost { background: #fff; color: var(--accent-dark); border: 1.5px solid var(--line); }
+  .btn-ghost:hover { border-color: var(--accent); }
+  .btn-ghost:disabled { color: #b8c4cd; border-color: var(--line); cursor: not-allowed; background: #f7f9fb; }
+  .btn-block { width: 100%; }
+  .btn-lg { min-height: 52px; font-size: clamp(15px, 4vw, 16px); }
+
+  /* ---------- Quiz header ---------- */
+  .qhead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 10px; }
+  .qcount { font-size: clamp(12px, 3.2vw, 13px); font-weight: 700; color: var(--accent-dark); letter-spacing: .4px; }
+  .qanswered { font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+  .progress { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin-bottom: clamp(16px, 4vw, 22px); }
+  .progress > div { height: 100%; background: linear-gradient(90deg, #00b4d8, var(--accent)); width: 0%; transition: width .25s ease; }
+
+  .qtext { font-size: clamp(16.5px, 4.4vw, 19.5px); font-weight: 650; line-height: 1.4; margin: 0 0 18px; overflow-wrap: anywhere; }
+
+  /* ---------- Options ---------- */
+  .options { display: flex; flex-direction: column; gap: clamp(9px, 2.4vw, 11px); }
+  .option {
+    display: flex; align-items: center; gap: 13px;
+    border: 1.5px solid var(--line); border-radius: 12px;
+    padding: clamp(12px, 3.2vw, 15px) clamp(13px, 3.5vw, 16px);
+    min-height: 52px;
+    cursor: pointer; background: #fff;
+    transition: border-color .12s ease, background .12s ease, box-shadow .12s ease;
+    user-select: none; touch-action: manipulation;
+  }
+  @media (hover: hover) { .option:hover { border-color: #9fd6e8; background: #fafdff; } }
+  .option.selected { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 1px var(--accent) inset; }
+  .option .letter {
+    flex: 0 0 30px; height: 30px; border-radius: 8px;
+    background: #eef3f6; color: var(--muted);
+    font-weight: 700; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .12s ease, color .12s ease;
+  }
+  .option.selected .letter { background: var(--accent); color: #fff; }
+  .option .label { font-size: clamp(14.5px, 3.7vw, 15.5px); line-height: 1.35; overflow-wrap: anywhere; }
+
+  /* ---------- Nav buttons ---------- */
+  .navrow { display: flex; gap: clamp(9px, 2.4vw, 12px); margin-top: clamp(18px, 4vw, 24px); }
+  .navrow .btn { flex: 1; }
+
+  /* ---------- Question navigator grid ---------- */
+  .navigator { margin-top: clamp(20px, 4.5vw, 26px); border-top: 1px solid var(--line); padding-top: 18px; }
+  .navigator h3 {
+    font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted);
+    margin: 0 0 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  }
+  .legend { display: flex; gap: 14px; font-size: 11px; color: var(--muted); font-weight: 500; text-transform: none; letter-spacing: 0; }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .swatch { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }
+  .swatch.cur { background: var(--accent); }
+  .swatch.ans { background: var(--green); }
+  .swatch.non { background: #fff; border: 1.5px solid var(--line); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)); gap: 8px; }
+  .cell {
+    aspect-ratio: 1 / 1; min-height: 40px;
+    border-radius: 9px; border: 1.5px solid var(--line);
+    background: #fff; color: var(--muted);
+    font-weight: 600; font-size: clamp(12px, 3.2vw, 13px);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: transform .05s ease, border-color .12s ease;
+    touch-action: manipulation;
+  }
+  @media (hover: hover) { .cell:hover { border-color: var(--accent); } }
+  .cell:active { transform: scale(.94); }
+  .cell.answered { background: var(--green-soft); border-color: #aee0c2; color: var(--green); }
+  .cell.current { border-color: var(--accent); background: var(--accent); color: #fff; box-shadow: 0 4px 12px rgba(0,150,199,.4); }
+
+  /* ---------- Results ---------- */
+  .score-hero { text-align: center; padding: 8px 0 6px; }
+  .ring-wrap { position: relative; width: clamp(150px, 44vw, 172px); aspect-ratio: 1 / 1; margin: 0 auto 6px; }
+  .ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .ring-center .pct { font-size: clamp(34px, 11vw, 42px); font-weight: 800; line-height: 1; }
+  .ring-center .frac { font-size: clamp(13px, 3.4vw, 14px); color: var(--muted); margin-top: 4px; }
+
+  .verdict { display: inline-block; padding: 7px 20px; border-radius: 99px; font-weight: 800; font-size: clamp(14px, 3.8vw, 15px); letter-spacing: .5px; margin: 10px 0 4px; }
+  .verdict.pass { background: var(--green-soft); color: var(--green); }
+  .verdict.fail { background: var(--red-soft); color: var(--red); }
+  .verdict-sub { color: var(--muted); font-size: clamp(13px, 3.4vw, 13.5px); margin: 4px 0 0; }
+
+  .res-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(8px, 2.2vw, 10px); margin: 22px 0 8px; }
+  .res-stat { text-align: center; background: #f6f9fb; border-radius: 12px; padding: clamp(11px, 3vw, 14px) 6px; }
+  .res-stat b { display: block; font-size: clamp(20px, 6vw, 24px); }
+  .res-stat span { font-size: clamp(11px, 3vw, 12px); color: var(--muted); }
+  .res-stat.ok b { color: var(--green); }
+  .res-stat.no b { color: var(--red); }
+  .res-stat.sk b { color: var(--amber); }
+
+  .review-toggle { margin: 22px 0 0; }
+  .review { margin-top: 18px; display: none; }
+  .review.show { display: block; }
+  .rev-item { border: 1.5px solid var(--line); border-radius: 13px; padding: 16px 16px 8px; margin-bottom: 14px; }
+  .rev-item.correct { border-color: #b6e3c8; background: #f4fbf7; }
+  .rev-item.wrong { border-color: #f1c4c4; background: #fdf6f6; }
+  .rev-q { display: flex; gap: 9px; font-weight: 650; font-size: clamp(14.5px, 3.8vw, 15.5px); line-height: 1.4; margin-bottom: 12px; overflow-wrap: anywhere; }
+  .rev-badge { flex: 0 0 auto; font-size: 16px; line-height: 1.4; }
+  .rev-opt { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 9px; font-size: clamp(13.5px, 3.5vw, 14.5px); margin-bottom: 7px; overflow-wrap: anywhere; }
+  .rev-opt .ltr { font-weight: 700; flex: 0 0 18px; }
+  .rev-opt.correct { background: var(--green-soft); color: #15743f; }
+  .rev-opt.your-wrong { background: var(--red-soft); color: #a32626; }
+  .rev-opt .tag { margin-left: auto; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; }
+  .rev-unanswered { font-size: 12.5px; color: var(--amber); font-weight: 600; margin: 2px 0 8px; }
+
+  .footnote { text-align: center; color: #9fc4d6; font-size: clamp(11px, 3vw, 12px); margin-top: 18px; padding: 0 8px; }
+
+  /* ---------- Small phones ---------- */
+  @media (max-width: 520px) {
+    .navigator h3 { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 7px; }
+  }
+  @media (max-width: 380px) {
+    .grid { grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 6px; }
+    .navrow { flex-direction: column; }
+    .legend { gap: 10px; }
+  }
+  /* ---------- Landscape / short viewports ---------- */
+  @media (max-height: 480px) and (orientation: landscape) {
+    .brand { margin-bottom: 10px; }
+    .brand .wave { display: none; }
+    .card { padding: 16px 18px; }
+  }
+  /* ---------- Tablet & up: a touch more breathing room ---------- */
+  @media (min-width: 720px) {
+    .grid { grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 9px; }
+  }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="brand">
+    <div class="wave">🤿</div>
+    <h1>PADI Open Water Practice Exam</h1>
+    <p>50 questions &middot; passing score 75%</p>
+  </div>
+
+  <!-- ============ START SCREEN ============ -->
+  <div class="card start" id="screen-start">
+    <h2>Ready to test your knowledge?</h2>
+    <p>Each attempt draws a <span class="hl">fresh, randomly shuffled set of 50 questions</span> from a pool of <span class="hl" id="poolSize">50</span> — and the answer choices are reshuffled too, so no two runs are alike. Move freely with <b>Next</b> / <b>Previous</b>, jump to any question with the number pad, and change answers anytime before you finish. Your score and a full answer review appear at the end.</p>
+    <div class="facts">
+      <div class="fact"><b>50</b><span>per attempt</span></div>
+      <div class="fact"><b>75%</b><span>to pass</span></div>
+      <div class="fact"><b id="poolFact">50</b><span>question pool</span></div>
+    </div>
+    <div class="resume-note" id="resumeNote"></div>
+    <button class="btn btn-primary btn-block btn-lg" id="startBtn">Start Exam</button>
+  </div>
+
+  <!-- ============ QUIZ SCREEN ============ -->
+  <div class="card hidden" id="screen-quiz">
+    <div class="qhead">
+      <div class="qcount" id="qcount">Question 1 of 50</div>
+      <div class="qanswered" id="qanswered">0 answered</div>
+    </div>
+    <div class="progress"><div id="progressBar"></div></div>
+
+    <p class="qtext" id="qtext"></p>
+    <div class="options" id="options"></div>
+
+    <div class="navrow">
+      <button class="btn btn-ghost" id="prevBtn">← Previous</button>
+      <button class="btn btn-primary" id="nextBtn">Next →</button>
+    </div>
+
+    <div class="navigator">
+      <h3>
+        <span>Jump to question</span>
+        <span class="legend">
+          <span><i class="swatch cur"></i>Current</span>
+          <span><i class="swatch ans"></i>Answered</span>
+          <span><i class="swatch non"></i>Unanswered</span>
+        </span>
+      </h3>
+      <div class="grid" id="navGrid"></div>
+    </div>
+  </div>
+
+  <!-- ============ RESULTS SCREEN ============ -->
+  <div class="card hidden" id="screen-results">
+    <div class="score-hero">
+      <div class="ring-wrap">
+        <svg viewBox="0 0 168 168" preserveAspectRatio="xMidYMid meet">
+          <circle cx="84" cy="84" r="74" fill="none" stroke="#eef3f6" stroke-width="16"/>
+          <circle id="ring" cx="84" cy="84" r="74" fill="none" stroke="#1a9e54" stroke-width="16"
+                  stroke-linecap="round" stroke-dasharray="465" stroke-dashoffset="465"/>
+        </svg>
+        <div class="ring-center">
+          <div class="pct" id="resPct">0%</div>
+          <div class="frac" id="resFrac">0 / 50</div>
+        </div>
+      </div>
+      <div><span class="verdict" id="verdict">—</span></div>
+      <p class="verdict-sub" id="verdictSub"></p>
+    </div>
+
+    <div class="res-stats">
+      <div class="res-stat ok"><b id="statCorrect">0</b><span>Correct</span></div>
+      <div class="res-stat no"><b id="statWrong">0</b><span>Incorrect</span></div>
+      <div class="res-stat sk"><b id="statSkip">0</b><span>Skipped</span></div>
+    </div>
+
+    <button class="btn btn-ghost btn-block review-toggle" id="reviewToggle">Show answer review ▾</button>
+    <div class="review" id="review"></div>
+
+    <div class="navrow">
+      <button class="btn btn-ghost" id="backToQuizBtn">← Back to questions</button>
+      <button class="btn btn-primary" id="retakeBtn">New exam</button>
+    </div>
+  </div>
+
+  <div class="footnote">Practice exam &middot; for study only &middot; not an official PADI assessment</div>
+</div>
+
+<script>
+/* ============================================================
+   QUESTION POOL
+   - POOL_BASE: the 50 questions from the PADI practice exam PDF
+     (options + official answer key, a = 0-based correct index).
+   - POOL_EXTRA: 100 additional researched questions (filled in
+     separately). The two are concatenated into POOL.
+   Each attempt randomly samples EXAM_SIZE questions from POOL,
+   shuffles their order, and shuffles each question's options.
+   ============================================================ */
+const POOL_BASE = [
+  { q:"What is the most important rule in scuba diving?", o:["Never dive deeper than 100 ft","Breathe continuously and never hold your breath","Always dive with Nitrox","Descend as fast as possible"], a:1 },
+  { q:"A buddy system is used primarily to:", o:["Save air","Increase safety","Reduce costs","Improve navigation"], a:1 },
+  { q:"What does an SPG measure?", o:["Depth","Tank pressure","Water temperature","Nitrogen level"], a:1 },
+  { q:"When descending, you should equalize:", o:["Only when ears hurt","Frequently and early","At the bottom","Every 50 ft"], a:1 },
+  { q:"The main purpose of a BCD is:", o:["Control buoyancy","Provide heat","Store air","Measure depth"], a:0 },
+  { q:"If your ears hurt during descent:", o:["Continue descending","Ascend slightly and try again","Ignore it","Kick harder"], a:1 },
+  { q:"A normal ascent rate is:", o:["30 ft/min or slower","60 ft/min","90 ft/min","Any speed"], a:0 },
+  { q:"A safety stop is usually made at:", o:["5 ft","15 ft","30 ft","50 ft"], a:1 },
+  { q:"A thumbs-up underwater means:", o:["OK","Low air","Ascend","Go deeper"], a:2 },
+  { q:"The gas most associated with decompression sickness is:", o:["Oxygen","Nitrogen","Helium","CO2"], a:1 },
+  { q:"If separated from your buddy:", o:["Continue diving","Search 1 minute then surface","Search indefinitely","Surface immediately"], a:1 },
+  { q:"Good buoyancy control helps:", o:["Reduce air use","Protect marine life","Improve comfort","All of the above"], a:3 },
+  { q:"A regulator delivers air:", o:["At tank pressure","At ambient pressure","At constant pressure","At vacuum"], a:1 },
+  { q:"Before entering the water:", o:["Check air","Check buddy","Secure equipment","All of the above"], a:3 },
+  { q:"Why avoid touching marine life?", o:["Could be dangerous","Could damage environment","Both","Neither"], a:2 },
+  { q:"The low-on-air signal is:", o:["Flat hand across throat","Thumbs up","Point down","OK sign"], a:0 },
+  { q:"What should you do if overexerted underwater?", o:["Swim faster","Stop and rest","Remove regulator","Ascend rapidly"], a:1 },
+  { q:"A dive computer tracks:", o:["Nitrogen exposure and depth","Temperature only","Compass only","Tank pressure only"], a:0 },
+  { q:"If water enters your mask:", o:["Surface immediately","Remove mask","Clear the mask","Ignore it"], a:2 },
+  { q:"Ultimate responsibility for a dive belongs to:", o:["Instructor","Buddy","Captain","You"], a:3 },
+  { q:"At 33 ft seawater, pressure is about:", o:["1 ATA","2 ATA","3 ATA","4 ATA"], a:1 },
+  { q:"At 66 ft seawater, pressure is about:", o:["2 ATA","3 ATA","4 ATA","5 ATA"], a:1 },
+  { q:"At 99 ft seawater, pressure is about:", o:["2 ATA","3 ATA","4 ATA","5 ATA"], a:2 },
+  { q:"As pressure increases, air volume:", o:["Increases","Decreases","Stays same","Doubles"], a:1 },
+  { q:"This pressure-volume relationship is:", o:["Henry's Law","Dalton's Law","Boyle's Law","Newton's Law"], a:2 },
+  { q:"A 1-liter bubble at the surface would be about what size at 33 ft?", o:["0.25 L","0.5 L","1 L","2 L"], a:1 },
+  { q:"A 2-liter bubble at 33 ft would be about what size at the surface?", o:["1 L","2 L","3 L","4 L"], a:3 },
+  { q:"Why should you never hold your breath while ascending?", o:["Air expands","Waste oxygen","Lose heat","Sink faster"], a:0 },
+  { q:"Air density generally _____ with depth.", o:["Decreases","Increases","Stays same","Disappears"], a:1 },
+  { q:"A diver ascends from 66 ft to 33 ft. Air volume will:", o:["Halve","Double","Stay same","Triple"], a:1 },
+  { q:"If caught in a current:", o:["Fight it","Conserve energy and follow plan","Remove weights","Ascend immediately"], a:1 },
+  { q:"What should you do if you begin ascending too quickly?", o:["Kick harder","Vent air and slow down","Hold breath","Inflate BCD"], a:1 },
+  { q:"What is a CESA?", o:["Dive table","Emergency ascent while exhaling","Rescue tow","Safety stop"], a:1 },
+  { q:"Flying too soon after diving increases risk of:", o:["Hypothermia","DCS","Sunburn","Narcosis"], a:1 },
+  { q:"Which item is part of BWRAF?", o:["Weights","Whistle","Watch","Wetsuit"], a:0 },
+  { q:"The 'A' in BWRAF stands for:", o:["Air","Ascend","Alternate","Assist"], a:0 },
+  { q:"What should you monitor throughout a dive?", o:["Fish count","Air, depth, buddy","Camera battery","Temperature"], a:1 },
+  { q:"A cylinder marked 3000 psi contains:", o:["Water","Compressed air","Pure oxygen","Nitrogen"], a:1 },
+  { q:"What is neutral buoyancy?", o:["Floating up","Sinking","Neither rising nor sinking","Standing on bottom"], a:2 },
+  { q:"Which environment typically requires additional training?", o:["Pool","Open water","Cavern/cave","Shore dive"], a:2 },
+  { q:"What should you do before using unfamiliar equipment?", o:["Guess","Read instructions/orientation","Dive anyway","Ask later"], a:1 },
+  { q:"What does a dive flag indicate?", o:["Fishing area","Divers in water","Strong current","Boat ramp"], a:1 },
+  { q:"The best breathing pattern underwater is:", o:["Hold breaths","Slow continuous breathing","Rapid breathing","Skip breaths"], a:1 },
+  { q:"Purpose of dive planning?", o:["Safety","Manage air/time","Coordinate buddies","All of the above"], a:3 },
+  { q:"After a dive, hydration is important because it may:", o:["Reduce decompression stress","Increase pressure","Improve visibility","Warm water"], a:0 },
+  { q:"What should you do if low on air?", o:["Tell buddy and end dive","Ignore it","Descend","Remove regulator"], a:0 },
+  { q:"What is positive buoyancy?", o:["Floating upward","Neutral","Sinking","Walking"], a:0 },
+  { q:"Most common cause of diver panic?", o:["Sharks","Multiple stress factors","Cold water only","Masks"], a:1 },
+  { q:"Which gas do divers absorb under pressure?", o:["Nitrogen","Hydrogen","Argon","Neon"], a:0 },
+  { q:"What should you do if you feel cold underwater?", o:["Ignore it","End dive if needed","Remove exposure suit","Descend"], a:1 },
+];
+
+/* 100 additional researched questions (PADI Open Water level). */
+const POOL_EXTRA = [
+  // ---- Dive physics ----
+  { q:"At what seawater depth is the absolute pressure about 2 ATA?", o:["5 m / 15 ft","10 m / 33 ft","20 m / 66 ft","30 m / 99 ft"], a:1 },
+  { q:"Each 10 metres (33 ft) of seawater adds how much pressure?", o:["Half an atmosphere","One atmosphere","Two atmospheres","Three atmospheres"], a:1 },
+  { q:"By Boyle's Law, if pressure doubles, a flexible air space will:", o:["Double in volume","Halve in volume","Stay the same","Triple in volume"], a:1 },
+  { q:"The greatest change in air volume per metre of depth occurs:", o:["Nearest the surface","At the deepest point","Only below 30 m","It is the same everywhere"], a:0 },
+  { q:"Buoyancy is explained by which principle?", o:["Boyle's Law","Charles's Law","Archimedes' Principle","Henry's Law"], a:2 },
+  { q:"An object that displaces more water weight than it weighs is:", o:["Positively buoyant","Negatively buoyant","Neutrally buoyant","Always sinking"], a:0 },
+  { q:"Compared with fresh water, salt water is denser, so a diver needs:", o:["Less weight","More weight","No weight","A smaller tank"], a:1 },
+  { q:"Which colour of light is absorbed first as you descend?", o:["Blue","Green","Red","Violet"], a:2 },
+  { q:"Through a flat dive mask, underwater objects appear:", o:["Smaller and farther","Larger and closer","Exactly true to size","Upside down"], a:1 },
+  { q:"Compared with air, sound travels through water:", o:["Much slower","About the same","About four times faster","It cannot travel"], a:2 },
+  { q:"A wetsuit diver loses buoyancy as they go deeper mainly because:", o:["Water becomes denser","The neoprene compresses","The suit fills with air","Gravity increases"], a:1 },
+  { q:"The absolute pressure at about 40 m / 132 ft of seawater is:", o:["3 ATA","4 ATA","5 ATA","6 ATA"], a:2 },
+  { q:"A balloon holding 4 litres at the surface will hold about how much at 30 m / 99 ft (4 ATA)?", o:["4 litres","2 litres","1 litre","8 litres"], a:2 },
+  { q:"Water conducts heat away from your body:", o:["Slower than air","About the same as air","Far faster than air","Only in cold water"], a:2 },
+  { q:"At 10 m / 33 ft, gauge pressure is 1 atmosphere, so absolute pressure is:", o:["1 ATA","2 ATA","3 ATA","4 ATA"], a:1 },
+  { q:"As a diver descends, the air they breathe from the regulator becomes:", o:["Less dense","The same density","Denser","Pure oxygen"], a:2 },
+
+  // ---- Dive physiology ----
+  { q:"Decompression sickness is caused by:", o:["Too much oxygen","Nitrogen bubbles forming after a fast ascent","Low carbon dioxide","Cold water"], a:1 },
+  { q:"Nitrogen narcosis usually becomes noticeable:", o:["In shallow water","At deeper depths","Only at night","On the surface"], a:1 },
+  { q:"The correct response to nitrogen narcosis is to:", o:["Descend deeper","Ascend to a shallower depth","Hold your breath","Remove your regulator"], a:1 },
+  { q:"A lung overexpansion injury can occur if a diver:", o:["Exhales while ascending","Holds their breath and ascends","Descends slowly","Equalizes early"], a:1 },
+  { q:"You should equalize your ears:", o:["Only when they hurt","Gently and early, before discomfort","Just once at the bottom","Never"], a:1 },
+  { q:"Mask squeeze is prevented by:", o:["Holding your breath","Exhaling a little air into the mask through your nose","Tightening the strap fully","Removing the mask"], a:1 },
+  { q:"If air becomes trapped and expands on ascent (a reverse block), you should:", o:["Ascend faster","Slow or stop your ascent and let it clear","Descend quickly","Ignore it"], a:1 },
+  { q:"Hyperventilating before a breath-hold dive is dangerous because it can cause:", o:["Ear pain","Shallow water blackout","Nitrogen narcosis","Decompression sickness"], a:1 },
+  { q:"Carbon dioxide buildup in a diver is commonly caused by:", o:["Slow, deep breathing","Skip breathing or over-exertion","Drinking water","Ascending slowly"], a:1 },
+  { q:"The first care for a diver suspected of decompression sickness is usually:", o:["Give them water","Breathing emergency oxygen","Put them back in the water","Give aspirin"], a:1 },
+  { q:"Which is a possible symptom of decompression sickness?", o:["Joint pain","Improved eyesight","Feeling warm","Increased appetite"], a:0 },
+  { q:"At depth, a given tank of air will last:", o:["Longer than at the surface","A shorter time than at the surface","Exactly the same","Indefinitely"], a:1 },
+  { q:"Shivering or feeling chilled during a dive is a sign you should:", o:["Descend deeper","Swim faster","Begin ending the dive","Remove your hood"], a:2 },
+  { q:"Nitrogen narcosis is sometimes compared to the feeling of:", o:["Caffeine","Alcohol intoxication","Hunger","Cold"], a:1 },
+  { q:"To help prevent decompression sickness, you should:", o:["Ascend quickly","Ascend slowly and make a safety stop","Hold your breath","Dive to your maximum every time"], a:1 },
+  { q:"Staying well hydrated and rested before diving helps reduce the risk of:", o:["Sunburn","Decompression sickness","Equipment failure","Strong currents"], a:1 },
+
+  // ---- Equipment ----
+  { q:"The purpose of an alternate air source (octopus) is to:", o:["Measure depth","Provide air to an out-of-air buddy","Control buoyancy","Carry weights"], a:1 },
+  { q:"A submersible pressure gauge (SPG) should be checked:", o:["Only at the start","Regularly throughout the dive","Only at the end","Never during the dive"], a:1 },
+  { q:"The low-pressure inflator hose connects to the:", o:["SPG","BCD","Mask","Fins"], a:1 },
+  { q:"A wetsuit keeps you warm by:", o:["Keeping you completely dry","Trapping a thin layer of water your body warms","Heating water electrically","Reflecting sunlight"], a:1 },
+  { q:"Compared with a wetsuit, a drysuit:", o:["Lets water flood in","Keeps you dry and can add air for insulation","Has no seals","Is only for warm water"], a:1 },
+  { q:"Before a dive you should open the cylinder valve:", o:["Fully closed","Fully open","Only a quarter turn","Leave it off"], a:1 },
+  { q:"The regulator first stage reduces high tank pressure to:", o:["Ambient pressure","An intermediate pressure","Zero pressure","Tank pressure"], a:1 },
+  { q:"The regulator second stage delivers air at:", o:["Intermediate pressure","Ambient (surrounding) pressure","Full tank pressure","A vacuum"], a:1 },
+  { q:"A dive computer's main advantage over printed tables is that it:", o:["Never needs a battery","Continuously tracks your actual depth and time","Measures air quality","Is always cheaper"], a:1 },
+  { q:"A quick-release weight system lets you:", o:["Add air to the BCD","Ditch weights in an emergency to gain buoyancy","Measure depth","Store your mask"], a:1 },
+  { q:"After diving in salt water, your equipment should be:", o:["Left as is","Rinsed with fresh water","Stored wet in direct sun","Sprayed with salt water"], a:1 },
+  { q:"A surface marker buoy (SMB) is used to:", o:["Measure depth","Signal your position to boats at the surface","Store spare air","Replace a compass"], a:1 },
+  { q:"An exposure suit is chosen mainly based on:", o:["Water temperature","Your favourite colour","Tank size","The boat type"], a:0 },
+  { q:"A snorkel is most useful for:", o:["Breathing at depth","Conserving tank air while on the surface","Equalizing your ears","Controlling buoyancy"], a:1 },
+  { q:"Recreational scuba cylinders are normally filled with:", o:["Pure oxygen","Filtered compressed air (about 21% oxygen)","Pure helium","Carbon dioxide"], a:1 },
+  { q:"A dive light is useful even in daylight to:", o:["Warm the water","Restore colour and see into shadows and crevices","Measure nitrogen","Signal the bends"], a:1 },
+  { q:"Fins should fit:", o:["Very loosely","Snugly but comfortably, without pinching","Painfully tight","One size fits all"], a:1 },
+  { q:"To reduce fogging, a dive mask is commonly treated with:", o:["Motor oil","Defog solution or saliva","Dry sand","Hand lotion"], a:1 },
+
+  // ---- Skills & procedures ----
+  { q:"The pre-dive buddy check BWRAF begins by checking the:", o:["Fins","BCD","Mask","Snorkel"], a:1 },
+  { q:"In the BWRAF buddy check, the letter R stands for:", o:["Regulator","Releases","Rinse","Rope"], a:1 },
+  { q:"The maximum ascent rate you should not exceed in recreational diving is about:", o:["9 m / 30 ft per minute","18 m / 60 ft per minute","30 m / 100 ft per minute","There is no limit"], a:1 },
+  { q:"A safety stop at 5 m / 15 ft is normally held for:", o:["30 seconds","1 minute","3 minutes","10 minutes"], a:2 },
+  { q:"If you run out of air and your buddy is nearby, the preferred response is to:", o:["Hold your breath and wait","Use your buddy's alternate air source","Drop weights and rush to the surface","Take off your mask"], a:1 },
+  { q:"A controlled emergency swimming ascent (CESA) is appropriate when:", o:["You feel cold","You are out of air with no buddy nearby and are reasonably shallow","You are hungry","The current is strong"], a:1 },
+  { q:"During a CESA you should:", o:["Hold your breath","Exhale continuously while swimming up","Descend first","Inflate the BCD fully"], a:1 },
+  { q:"To clear water from your mask you:", o:["Take the mask off","Press the top of the frame and exhale through your nose","Swallow hard","Blink rapidly"], a:1 },
+  { q:"If your regulator is knocked from your mouth, you should:", o:["Hold your breath and surface","Recover and replace it, then clear it","Remove your mask","Ascend rapidly"], a:1 },
+  { q:"To descend in good control, you should:", o:["Inflate the BCD","Deflate the BCD and equalize early","Hold your breath","Kick downward hard"], a:1 },
+  { q:"Good buoyancy and trim allow a diver to:", o:["Skip the safety stop","Hover without using their hands","Exceed depth limits safely","Stop breathing briefly"], a:1 },
+  { q:"When you reach your planned turn-around pressure, you should:", o:["Go deeper","Begin heading back / start your return","Remove your SPG","Drop your weights"], a:1 },
+  { q:"If you get a leg cramp underwater, you should:", o:["Kick harder","Stretch the muscle, for example by pulling the fin tip","Remove and drop the fin","Ascend rapidly"], a:1 },
+  { q:"To help a tired diver at the surface, you can:", o:["Have them remove all gear","Establish buoyancy for both of you and tow them","Push them underwater","Leave to get help only"], a:1 },
+  { q:"On reaching the surface at the end of a dive, a good habit is to:", o:["Deflate the BCD fully","Inflate the BCD for positive buoyancy","Drop your weights","Remove your fins first"], a:1 },
+  { q:"A well-planned water entry from a boat means you should:", o:["Jump in without checking","Use a trained entry technique and signal OK","Dive head-first anywhere","Enter without your mask on"], a:1 },
+
+  // ---- Dive planning ----
+  { q:"The phrase that best summarizes safe diving is:", o:["Dive first, plan later","Plan your dive and dive your plan","Deeper is always better","Skip the plan to save time"], a:1 },
+  { q:"A no-decompression limit (NDL) is the maximum time at a depth that allows you to:", o:["Run the tank empty","Ascend directly without required decompression stops","Stay until dark","Hold your breath"], a:1 },
+  { q:"As depth increases, the no-decompression limit generally:", o:["Increases","Decreases","Stays the same","Doubles"], a:1 },
+  { q:"On the Recreational Dive Planner, a pressure group represents:", o:["Your remaining air","The amount of residual nitrogen in your body","Water temperature","Your fitness level"], a:1 },
+  { q:"A surface interval allows a diver's body to:", o:["Absorb more nitrogen","Off-gas (release) excess nitrogen","Refill the cylinder","Warm the water"], a:1 },
+  { q:"When making several dives in a day, it is best to:", o:["Make the shallowest dive first","Make the deepest dive first","Always dive deepest last","Ignore depth order"], a:1 },
+  { q:"After a single no-decompression dive, the minimum recommended preflight surface interval is:", o:["2 hours","6 hours","12 hours","48 hours"], a:2 },
+  { q:"After several dives over multiple days, the recommended preflight surface interval is at least:", o:["6 hours","12 hours","18 hours","30 minutes"], a:2 },
+  { q:"When a buddy team uses different limits, the dive should be planned around:", o:["The deeper diver's limit","The more conservative (shorter/shallower) limit","The longer bottom time","Whoever is more experienced"], a:1 },
+  { q:"The maximum depth limit for a certified PADI Open Water Diver is:", o:["12 m / 40 ft","18 m / 60 ft","30 m / 100 ft","40 m / 130 ft"], a:1 },
+  { q:"A repetitive dive is generally any dive made:", o:["Deeper than 30 m","Within about 6 hours of a previous dive","Only at night","Only in fresh water"], a:1 },
+  { q:"Keeping a dive log is useful mainly because it:", o:["Is legally required everywhere","Records experience and helps plan future dives","Refills your tank","Prevents narcosis"], a:1 },
+
+  // ---- Environment & safety ----
+  { q:"The diver-down flag (red with a white diagonal stripe) tells boaters that:", o:["A race is underway","Divers are in the water nearby","Fishing is prohibited","The sea is calm"], a:1 },
+  { q:"The blue-and-white Alpha flag indicates:", o:["A regatta","A vessel engaged in diving with restricted maneuverability","A swimming area","A fuel dock"], a:1 },
+  { q:"If you are caught in a current too strong to swim against, you should:", o:["Swim hard against it","Conserve energy, signal, and follow your plan","Drop weights and shoot up","Take your fins off"], a:1 },
+  { q:"A thermocline is:", o:["A strong current","A layer where water temperature changes sharply with depth","A species of fish","A type of dive flag"], a:1 },
+  { q:"The best way to protect fragile life such as coral is to:", o:["Touch it gently","Maintain good buoyancy and avoid contact","Feed the fish","Collect a small sample"], a:1 },
+  { q:"Underwater natural navigation can make use of:", o:["Only a compass","Sand ripples, depth contours, and the sun","A GPS receiver","Road signs"], a:1 },
+  { q:"If you become separated from your buddy, the standard procedure is to:", o:["Keep diving alone","Search for about a minute, then surface to reunite","Surface and leave immediately","Descend deeper to look"], a:1 },
+  { q:"A sound air-management habit is to:", o:["Breathe the tank completely empty","Begin your ascent with a reserve still in the tank","Share air before checking your gauge","Ignore the SPG"], a:1 },
+  { q:"Diving with a head cold is discouraged because:", o:["It is unlucky","Congestion makes equalizing hard and risks barotrauma","Fish avoid sick divers","It wastes air"], a:1 },
+  { q:"A simple rule for handling any diving emergency is to:", o:["Panic and rush","Stop, breathe, think, then act","Drop everything and bolt upward","Hold your breath and wait"], a:1 },
+  { q:"Seasickness on a dive boat is often reduced by:", o:["Reading below deck","Looking at the horizon and staying in fresh air","Eating a heavy meal","Lying face-down in the cabin"], a:1 },
+  { q:"Before boat diving, you should plan your entries and exits by:", o:["Doing whatever you like","Following the crew's and divemaster's briefing","Only using the bow","Skipping the buddy signal"], a:1 },
+
+  // ---- Continuing education & general ----
+  { q:"After Open Water Diver, the next core PADI course is typically:", o:["Divemaster","Advanced Open Water Diver","Instructor","Cave Diver"], a:1 },
+  { q:"To learn to prevent and manage dive emergencies, divers take the:", o:["Wreck specialty","Rescue Diver course","Photography course","Night specialty"], a:1 },
+  { q:"To dive deeper than 18 m / 60 ft, an Open Water diver should first:", o:["Just go deeper","Get further training such as Advanced Open Water","Only dive at night","Practice holding their breath"], a:1 },
+  { q:"Breathing enriched air nitrox primarily lets a diver:", o:["Dive without limits","Extend no-decompression time at a given depth","Skip safety stops","Use less air"], a:1 },
+  { q:"To dive with enriched air (nitrox), a diver needs:", o:["Nothing extra","Nitrox (enriched air) specialty training","A technical certification","A drysuit"], a:1 },
+  { q:"Overhead environments such as caves and wrecks require:", o:["No special training","Specialty or technical training","Only a dive light","A larger tank only"], a:1 },
+  { q:"A good reason to dive with a local guide in a new area is that they:", o:["Are legally required","Know local conditions, hazards, and sites","Carry your gear","Refill your tank for free"], a:1 },
+  { q:"The rule to breathe continuously and never hold your breath protects mainly against:", o:["Ear squeeze","Lung overexpansion injuries","Seasickness","Leg cramps"], a:1 },
+  { q:"Continuing your dive education generally helps you become:", o:["A slower diver","A safer, more confident diver","Exempt from buddy checks","Able to skip planning"], a:1 },
+  { q:"Logging the conditions, depth, and time of each dive helps you mainly to:", o:["Win competitions","Build experience and plan similar dives","Avoid paying fees","Breathe less air"], a:1 },
+];
+
+const POOL = POOL_BASE.concat(POOL_EXTRA);
+
+const EXAM_SIZE = 50;
+const LETTERS = ["A","B","C","D"];
+const PASS_PCT = 75;
+const STORAGE_KEY = "padi-ow-practice-v2";
+
+/* ---------- State ---------- */
+let exam = [];            // the active 50 (resolved: shuffled options + correct index)
+let answers = [];         // one slot per active question
+let current = 0;
+
+/* ---------- Utilities ---------- */
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Build a fresh exam: sample EXAM_SIZE from POOL, shuffle order, shuffle each
+// question's options while tracking the correct one.
+function buildExam() {
+  const picks = shuffle(POOL).slice(0, Math.min(EXAM_SIZE, POOL.length));
+  return picks.map(item => {
+    const shuffled = shuffle(item.o.map((text, idx) => ({ text, correct: idx === item.a })));
+    return {
+      q: item.q,
+      o: shuffled.map(x => x.text),
+      a: shuffled.findIndex(x => x.correct),
+    };
+  });
+}
+
+/* ---------- Elements ---------- */
+const el = (id) => document.getElementById(id);
+const screens = { start: el("screen-start"), quiz: el("screen-quiz"), results: el("screen-results") };
+
+function showScreen(name) {
+  Object.entries(screens).forEach(([k, node]) => node.classList.toggle("hidden", k !== name));
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* ---------- Persistence ---------- */
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ exam, answers, current })); } catch (e) {}
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (Array.isArray(data.exam) && data.exam.length === EXAM_SIZE &&
+        Array.isArray(data.answers) && data.answers.length === data.exam.length) {
+      exam = data.exam;
+      answers = data.answers;
+      current = Math.min(Math.max(0, data.current | 0), exam.length - 1);
+      return answers.some(a => a !== null);
+    }
+  } catch (e) {}
+  return false;
+}
+function clearSave() { try { localStorage.removeItem(STORAGE_KEY); } catch (e) {} }
+
+/* ---------- Render quiz ---------- */
+function answeredCount() { return answers.filter(a => a !== null).length; }
+
+function renderQuestion() {
+  const item = exam[current];
+  const total = exam.length;
+  el("qcount").textContent = `Question ${current + 1} of ${total}`;
+  const n = answeredCount();
+  el("qanswered").textContent = `${n} answered`;
+  el("progressBar").style.width = `${(n / total) * 100}%`;
+  el("qtext").textContent = `${current + 1}. ${item.q}`;
+
+  const wrap = el("options");
+  wrap.innerHTML = "";
+  item.o.forEach((opt, i) => {
+    const div = document.createElement("div");
+    div.className = "option" + (answers[current] === i ? " selected" : "");
+    div.setAttribute("role", "button");
+    div.setAttribute("tabindex", "0");
+    div.setAttribute("aria-pressed", answers[current] === i ? "true" : "false");
+    div.innerHTML = `<span class="letter">${LETTERS[i]}</span><span class="label">${opt}</span>`;
+    div.addEventListener("click", () => selectOption(i));
+    div.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectOption(i); } });
+    wrap.appendChild(div);
+  });
+
+  el("prevBtn").disabled = current === 0;
+  el("nextBtn").textContent = current === total - 1 ? "Finish ✓" : "Next →";
+  renderNavigator();
+}
+
+function selectOption(i) {
+  answers[current] = i;
+  save();
+  const opts = el("options").children;
+  for (let k = 0; k < opts.length; k++) {
+    opts[k].classList.toggle("selected", k === i);
+    opts[k].setAttribute("aria-pressed", k === i ? "true" : "false");
+  }
+  const total = exam.length;
+  el("qanswered").textContent = `${answeredCount()} answered`;
+  el("progressBar").style.width = `${(answeredCount() / total) * 100}%`;
+  renderNavigator();
+}
+
+function renderNavigator() {
+  const grid = el("navGrid");
+  grid.innerHTML = "";
+  for (let i = 0; i < exam.length; i++) {
+    const c = document.createElement("button");
+    c.className = "cell" + (i === current ? " current" : answers[i] !== null ? " answered" : "");
+    c.textContent = i + 1;
+    c.title = `Question ${i + 1}` + (answers[i] !== null ? ` — answered ${LETTERS[answers[i]]}` : "");
+    c.addEventListener("click", () => goTo(i));
+    grid.appendChild(c);
+  }
+}
+
+function goTo(i) {
+  current = Math.min(Math.max(0, i), exam.length - 1);
+  save();
+  renderQuestion();
+}
+
+/* ---------- Finish / results ---------- */
+function finish() {
+  const remaining = exam.length - answeredCount();
+  if (remaining > 0) {
+    const ok = confirm(`You have ${remaining} unanswered question${remaining > 1 ? "s" : ""}. Unanswered questions are marked incorrect.\n\nFinish and see your score?`);
+    if (!ok) return;
+  }
+  showResults();
+}
+
+function showResults() {
+  const total = exam.length;
+  let correct = 0, wrong = 0, skipped = 0;
+  answers.forEach((ans, i) => {
+    if (ans === null) skipped++;
+    else if (ans === exam[i].a) correct++;
+    else wrong++;
+  });
+  const pct = Math.round((correct / total) * 100);
+  const passed = pct >= PASS_PCT;
+
+  el("resPct").textContent = `${pct}%`;
+  el("resFrac").textContent = `${correct} / ${total}`;
+  el("statCorrect").textContent = correct;
+  el("statWrong").textContent = wrong;
+  el("statSkip").textContent = skipped;
+
+  const ring = el("ring");
+  const circ = 465; // 2 * pi * 74 ≈ 465
+  ring.style.stroke = passed ? "var(--green)" : "var(--red)";
+  ring.style.strokeDashoffset = String(circ * (1 - correct / total));
+
+  const verdict = el("verdict");
+  verdict.textContent = passed ? "PASS" : "DID NOT PASS";
+  verdict.className = "verdict " + (passed ? "pass" : "fail");
+  el("verdictSub").textContent = passed
+    ? `Nicely done — you're above the ${PASS_PCT}% passing mark.`
+    : `You need ${Math.ceil(total * PASS_PCT / 100)} correct (${PASS_PCT}%) to pass. Review and try again.`;
+
+  buildReview();
+  el("review").classList.remove("show");
+  el("reviewToggle").textContent = "Show answer review ▾";
+  showScreen("results");
+}
+
+function buildReview() {
+  const box = el("review");
+  box.innerHTML = "";
+  exam.forEach((item, i) => {
+    const ans = answers[i];
+    const isCorrect = ans === item.a;
+    const card = document.createElement("div");
+    card.className = "rev-item " + (isCorrect ? "correct" : "wrong");
+
+    let html = `<div class="rev-q"><span class="rev-badge">${isCorrect ? "✅" : "❌"}</span><span>${i + 1}. ${item.q}</span></div>`;
+    if (ans === null) html += `<div class="rev-unanswered">⚠️ You did not answer this question.</div>`;
+
+    item.o.forEach((opt, k) => {
+      let cls = "rev-opt", tag = "";
+      if (k === item.a) { cls += " correct"; tag = `<span class="tag">Correct</span>`; }
+      else if (k === ans) { cls += " your-wrong"; tag = `<span class="tag">Your answer</span>`; }
+      html += `<div class="${cls}"><span class="ltr">${LETTERS[k]}</span><span>${opt}</span>${tag}</div>`;
+    });
+    card.innerHTML = html;
+    box.appendChild(card);
+  });
+}
+
+/* ---------- Start / resume ---------- */
+function beginExam() { showScreen("quiz"); renderQuestion(); }
+
+function startOrResume() {
+  if (exam.length !== EXAM_SIZE) {        // no in-progress session -> fresh exam
+    exam = buildExam();
+    answers = new Array(exam.length).fill(null);
+    current = 0;
+    save();
+  }
+  beginExam();
+}
+
+function newExam() {
+  if (!confirm("Start a new exam? This shuffles in a fresh set of questions and clears your current answers.")) return;
+  exam = buildExam();
+  answers = new Array(exam.length).fill(null);
+  current = 0;
+  save();
+  beginExam();
+}
+
+/* ---------- Wire up ---------- */
+el("startBtn").addEventListener("click", startOrResume);
+el("prevBtn").addEventListener("click", () => { if (current > 0) goTo(current - 1); });
+el("nextBtn").addEventListener("click", () => {
+  if (current === exam.length - 1) finish();
+  else goTo(current + 1);
+});
+el("retakeBtn").addEventListener("click", newExam);
+el("backToQuizBtn").addEventListener("click", () => { showScreen("quiz"); renderQuestion(); });
+el("reviewToggle").addEventListener("click", () => {
+  const r = el("review");
+  const shown = r.classList.toggle("show");
+  el("reviewToggle").textContent = shown ? "Hide answer review ▴" : "Show answer review ▾";
+});
+
+/* Keyboard shortcuts on the quiz screen */
+document.addEventListener("keydown", (e) => {
+  if (screens.quiz.classList.contains("hidden")) return;
+  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+  if (e.key === "ArrowLeft") { if (current > 0) goTo(current - 1); }
+  else if (e.key === "ArrowRight") { if (current === exam.length - 1) finish(); else goTo(current + 1); }
+  else if (["1","2","3","4"].includes(e.key)) { selectOption(parseInt(e.key, 10) - 1); }
+  else {
+    const up = e.key.toUpperCase();
+    if (["A","B","C","D"].includes(up)) selectOption(LETTERS.indexOf(up));
+  }
+});
+
+/* On load: show pool size and offer to resume an in-progress session */
+(function init() {
+  el("poolSize").textContent = POOL.length;
+  el("poolFact").textContent = POOL.length;
+  const hasProgress = load();
+  if (hasProgress) {
+    const note = el("resumeNote");
+    note.style.display = "block";
+    note.innerHTML = `You have a saved session — <b>${answeredCount()} of ${exam.length}</b> answered. ` +
+      `Press <b>Start Exam</b> to continue, or use “New exam” later for a fresh shuffled set.`;
+  }
+})();
+</script>
+</body>
+</html>
