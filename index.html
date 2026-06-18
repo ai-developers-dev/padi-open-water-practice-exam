@@ -500,6 +500,8 @@ const STORAGE_KEY = "padi-ow-practice-v2";
 let exam = [];            // the active 50 (resolved: shuffled options + correct index)
 let answers = [];         // one slot per active question
 let current = 0;
+let advanceTimer = null;  // pending auto-advance after an answer is chosen
+const AUTO_ADVANCE_MS = 250; // brief pause so the choice registers before moving on
 
 /* ---------- Utilities ---------- */
 function shuffle(arr) {
@@ -586,7 +588,12 @@ function renderQuestion() {
   renderNavigator();
 }
 
+function clearAdvance() {
+  if (advanceTimer) { clearTimeout(advanceTimer); advanceTimer = null; }
+}
+
 function selectOption(i) {
+  clearAdvance();
   answers[current] = i;
   save();
   const opts = el("options").children;
@@ -598,6 +605,15 @@ function selectOption(i) {
   el("qanswered").textContent = `${answeredCount()} answered`;
   el("progressBar").style.width = `${(answeredCount() / total) * 100}%`;
   renderNavigator();
+  // Auto-advance to the next question. (Last question waits for the Finish
+  // button so a final tap never submits the exam by accident.)
+  if (current < total - 1) {
+    const from = current;
+    advanceTimer = setTimeout(() => {
+      advanceTimer = null;
+      if (current === from && !screens.quiz.classList.contains("hidden")) goTo(current + 1);
+    }, AUTO_ADVANCE_MS);
+  }
 }
 
 function renderNavigator() {
@@ -614,6 +630,7 @@ function renderNavigator() {
 }
 
 function goTo(i) {
+  clearAdvance();
   current = Math.min(Math.max(0, i), exam.length - 1);
   save();
   renderQuestion();
@@ -621,6 +638,7 @@ function goTo(i) {
 
 /* ---------- Finish / results ---------- */
 function finish() {
+  clearAdvance();
   const remaining = exam.length - answeredCount();
   if (remaining > 0) {
     const ok = confirm(`You have ${remaining} unanswered question${remaining > 1 ? "s" : ""}. Unanswered questions are marked incorrect.\n\nFinish and see your score?`);
